@@ -5,13 +5,14 @@ import os
 import time
 import ujson
 import requests
+import logging
 
 from kafka import KafkaProducer
 
 parser = argparse.ArgumentParser(description='Kafka word fountain')
 parser.add_argument('--servers', help='The bootstrap servers', default='localhost:9092')
 parser.add_argument('--topic', help='Topic to publish to', default='word-fountain')
-parser.add_argument('--rate', type=int, help='requests per hour', default=3)
+parser.add_argument('--rate', type=int, help='seconds between requests', default=300)
 parser.add_argument('--token', help='Your github API token', default='') 
 parser.add_argument('--endpoint', help='Github endpoint', default='events')
 args = parser.parse_args()
@@ -44,7 +45,6 @@ while True:
         events = ujson.loads(resp.content)
         # handleEvents(resp) # will need to traverse pagination
         for i in range(0,len(events)):
-            producer.send(topic, str(events[i]['type']).strip())
-
-    time.sleep(70.0)
+            producer.send(topic, events[i]['type'].encode('utf-8'))
+    time.sleep(rate)
 
